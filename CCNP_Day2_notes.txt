@@ -1,0 +1,193 @@
+Search: vEdge Cloud
+1. System
+Template name: VE-SYSTEM
+
+Console baud rate: Global > 9600
+
+GPS:
+Latitude/Longitude: Device Specific
+
+
+2. Banner
+Template name: VE-BANNER
+
+Login banner: Device specific
+MOTD Banner: FOR AUTHORIZED USERS ONLY
+
+
+3. VPN0
+Template name: BR-VE-VPN-VPN0
+
+Global
+VPN: 0
+Name: Transport VPN
+
+IPv4
+prefix: 0.0.0.0/0
+add next hop: device specific
+
+4. VPN512
+Template name: BR-VE-VPN-VPN512
+
+
+Global
+VPN: 0
+Name: MGMT VPN
+
+
+5. VPN0-GO
+Template name: BR-VE-VPNINT-VPN0-G0
+
+
+Global
+Shutdown: no
+Interface Name: ge0/0
+
+ipv4 address: device specific
+
+Tunnel int: on
+Color: biz-internet
+
+Allow service All: Global On
+netconf: global on
+SSH: on
+NAT On
+
+
+
+6. VPN512
+Template name: BR-VE-VPNINT-VPN512-ETH0
+
+
+Global
+Shutdown: no
+Interface Name: eth0
+
+
+7. BGP
+Template name: BR-VE-BGP-VPN0
+
+Global
+Shutdown: no
+
+8. BR-VE-VPN-VPN1
+Template name: BR-VE-VPN-VPN1
+
+Global
+VPN: 1
+Name: DATA VPN
+
+IPV4: 0.0.0.0/0
+select vpn
+global ON
+
+
+9. BR-VE-VPNINT-VPN1-G1
+Template name: BR-VE-VPNINT-VPN1-G1
+
+Global
+Shutdown: no
+Interface name: ge0/1
+
+
+10. BR-VE-VPN1-OSPF
+Template name: BR-VE-VPN1-OSPF
+
+Area: 0
+Interface name: ge0/1
+
+
+
+
+
+
+
+
+
+
+
+-----==================---------
+
+login Banner: WELCOME TO RIVAN SDWAN VISAYAS
+
+get latitude and longitude in google maps:                                   
+LUZON: 14.429671 120.878422
+VISAYAS: 10.607433 122.962464
+MINDANAO: 6.689429 124.678977
+
+
+
+conf t 
+router ospf 1 
+network 172.16.20.0 0.0.0.255 area 0 
+network 2.2.2.2 0.0.0.0 area 0 
+end
+wr
+! 
+
+conf t 
+router ospf 1 
+network 172.16.30.0 0.0.0.255 area 0 
+network 3.3.3.3 0.0.0.0 area 0 
+end
+wr
+
+
+
+
+-==========================-------------------------------
+
+
+NEXUS:
+
+
+NXSPH
+
+config t
+feature ospf
+feature nv overlay
+feature vn-segment-vlan-based
+system jumbomtu 9216
+!
+router ospf 10
+!
+interface eth 1/1
+ no switchport
+ ip address 100.1.1.2/30
+ ip router ospf 10 area 0
+ no shut
+interface loopback0
+ ip address 20.20.20.20/32
+ ip router ospf 10 area 0
+!
+vlan 50
+ vn-segment 5000
+
+interface ethernet 1/5-6
+  switchport
+  switchport access vlan 50
+  no shutdown
+
+!
+interface Nve 1
+  no shutdown
+  source-interface loopback 0
+  member vni 5000
+   ingress-replication protocol static
+     peer-ip 10.10.10.10
+	 exit
+
+conf t
+hostname R1-JP
+int gi0/0
+no shut
+ip add 50.0.0.1 255.0.0.0
+end
+
+
+conf t
+hostname R3-PH
+int gi0/0
+no shut
+ip add 50.0.0.3 255.0.0.0
+end
